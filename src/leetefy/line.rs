@@ -2,71 +2,44 @@ use super::char;
 use super::suffix;
 use std::str::Chars;
 
-enum Token {
-  Word(Word),
-  Punctuation(char),
+struct Tokens<'i> {
+  chars: &'i mut Chars<'i>,
+  word: Option<Word>,
+  punctuation: Option<char>,
 }
 
-impl Token {
-  pub fn leetefy(&self) -> String {
-    match self {
-      Token::Word(word) => word.leetefy(),
-      Token::Punctuation(chr) => String::from(*chr),
+impl<'i> Tokens<'i> {
+  pub fn new(chars: &'i mut Chars<'i>) -> Self {
+    Tokens {
+      chars,
+      word: None,
+      punctuation: None,
+    }
+  }
+
+  fn is_punctuation(chr: char) -> bool {
+    const PUNCTUATION_CHARS: &[char] = &[
+      '!', ' ', '\"', '#', '$', '%', '&', '\'', '(', ')', '*', '+', ',', '-', '.', '/', ':', ';',
+      '<', '=', '>', '?', '@', '[', '\\', ']', '^', '`', '{', '|', '}', '\n', '\t', '\r', '\0',
+    ];
+
+    PUNCTUATION_CHARS.contains(&chr)
+  }
+
+  fn push_char(word: &mut Option<Word>, chr: char) {
+    if let Some(word) = word {
+      word.push(chr);
+    } else {
+      *word = Some({
+        let mut word = Word::new();
+        word.push(chr);
+        word
+      });
     }
   }
 }
 
-struct TokenIter<'i> {
-  chars: &'i mut Chars<'i>,
-  word: Option<Word>,
-  punctuation: Option<char>
-}
-
-impl<'i> TokenIter<'i> {
-  pub fn new(chars: &'i mut Chars<'i>) -> Self {
-    TokenIter { chars, word: None, punctuation: None }
-  }
-
-  fn is_punctuation(chr: char) -> bool {
-    chr == '!'
-      || chr == ' '
-      || chr == '\"'
-      || chr == '#'
-      || chr == '$'
-      || chr == '%'
-      || chr == '&'
-      || chr == '\''
-      || chr == '('
-      || chr == ')'
-      || chr == '*'
-      || chr == '+'
-      || chr == ','
-      || chr == '-'
-      || chr == '.'
-      || chr == '/'
-      || chr == ':'
-      || chr == ';'
-      || chr == '<'
-      || chr == '='
-      || chr == '>'
-      || chr == '?'
-      || chr == '@'
-      || chr == '['
-      || chr == '\\'
-      || chr == ']'
-      || chr == '^'
-      || chr == '`'
-      || chr == '{'
-      || chr == '|'
-      || chr == '}'
-      || chr == '\n'
-      || chr == '\t'
-      || chr == '\r'
-      || chr == '\0'
-  }
-}
-
-impl<'i> Iterator for TokenIter<'i> {
+impl<'i> Iterator for Tokens<'i> {
   type Item = Token;
 
   fn next(&mut self) -> Option<Self::Item> {
@@ -82,30 +55,30 @@ impl<'i> Iterator for TokenIter<'i> {
         match self.word {
           Some(_) => {
             self.punctuation = Some(chr);
-            return self
-              .word
-              .take()
-              .and_then(|word| Some(Token::Word(word)));
+            return self.word.take().and_then(|word| Some(Token::Word(word)));
           }
           None => return Some(Token::Punctuation(chr)),
         }
       }
 
-      if let Some(word) = &mut self.word {
-        word.push(chr);
-      } else {
-        self.word = Some({
-          let mut word = Word::new();
-          word.push(chr);
-          word
-        });
-      }
+      Self::push_char(&mut self.word, chr);
     }
-    
-    self
-      .word
-      .take()
-      .and_then(|word| Some(Token::Word(word)))
+
+    self.word.take().and_then(|word| Some(Token::Word(word)))
+  }
+}
+
+enum Token {
+  Word(Word),
+  Punctuation(char),
+}
+
+impl Token {
+  pub fn leetefy(&self) -> String {
+    match self {
+      Token::Word(word) => word.leetefy(),
+      Token::Punctuation(chr) => String::from(*chr),
+    }
   }
 }
 
@@ -115,10 +88,9 @@ struct Word {
 
 impl Word {
   pub fn new() -> Self {
-    let mean_length_of_english_word = 5;
-
+    const MEAN_LENGTH_OF_ENGLISH_WORD: usize = 5;
     Word {
-      content: Vec::with_capacity(mean_length_of_english_word),
+      content: Vec::with_capacity(MEAN_LENGTH_OF_ENGLISH_WORD),
     }
   }
 
@@ -135,7 +107,7 @@ impl Word {
 }
 
 pub fn leetefy_line(line: &str) -> String {
-  TokenIter::new(&mut line.chars())
+  Tokens::new(&mut line.chars())
     .map(|token| token.leetefy())
     .collect()
 }
