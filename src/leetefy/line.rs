@@ -8,6 +8,35 @@ struct Tokens<'i> {
   punctuation: Option<char>,
 }
 
+impl<'i> Iterator for Tokens<'i> {
+  type Item = Token;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    if let Some(_) = self.punctuation {
+      return self
+        .punctuation
+        .take()
+        .and_then(|chr| Some(Token::Punctuation(chr)));
+    }
+
+    for chr in &mut self.chars {
+      if Self::is_punctuation(chr) {
+        match self.word {
+          Some(_) => {
+            self.punctuation = Some(chr);
+            return self.word.take().and_then(|word| Some(Token::Word(word)));
+          }
+          None => return Some(Token::Punctuation(chr)),
+        }
+      }
+
+      Self::push_char(&mut self.word, chr);
+    }
+
+    self.word.take().and_then(|word| Some(Token::Word(word)))
+  }
+}
+
 impl<'i> Tokens<'i> {
   pub fn new(chars: &'i mut Chars<'i>) -> Self {
     Tokens {
@@ -36,35 +65,6 @@ impl<'i> Tokens<'i> {
         word
       });
     }
-  }
-}
-
-impl<'i> Iterator for Tokens<'i> {
-  type Item = Token;
-
-  fn next(&mut self) -> Option<Self::Item> {
-    if let Some(_) = self.punctuation {
-      return self
-        .punctuation
-        .take()
-        .and_then(|chr| Some(Token::Punctuation(chr)));
-    }
-
-    for chr in &mut self.chars {
-      if Self::is_punctuation(chr) {
-        match self.word {
-          Some(_) => {
-            self.punctuation = Some(chr);
-            return self.word.take().and_then(|word| Some(Token::Word(word)));
-          }
-          None => return Some(Token::Punctuation(chr)),
-        }
-      }
-
-      Self::push_char(&mut self.word, chr);
-    }
-
-    self.word.take().and_then(|word| Some(Token::Word(word)))
   }
 }
 

@@ -47,14 +47,14 @@ fn random_choice(variants: Vec<&str>) -> String {
 mod tests {
   #[test]
   fn it_ignores_non_askii_chars() {
-    let non_askii = 'э'; 
+    let non_askii = 'э';
     let leet = super::leetefy_char(&non_askii);
     assert_eq!(non_askii.to_string(), leet);
   }
 
   #[test]
   fn it_ignores_numbers() {
-    let number = '1'; 
+    let number = '1';
     let leet = super::leetefy_char(&number);
     assert_eq!(number.to_string(), leet);
   }
@@ -63,7 +63,7 @@ mod tests {
   fn it_translates_askii_alphabet_to_leet() {
     let askii_a_code = 97u8;
     let askii_z_code = 97u8;
-    
+
     for symbol in askii_a_code..=askii_z_code {
       let symbol = symbol as char;
       let leet = super::leetefy_char(&symbol);
