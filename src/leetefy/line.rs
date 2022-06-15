@@ -1,27 +1,27 @@
 use super::char;
 use super::suffix;
-use std::iter::Peekable;
 use peeking_take_while::PeekableExt;
+use std::iter::Peekable;
 
 struct Tokens<'i> {
-  chars: Peekable<&'i mut dyn Iterator<Item = char>> 
+  chars: Peekable<&'i mut dyn Iterator<Item = char>>,
 }
 
 impl<'i> Iterator for Tokens<'i> {
   type Item = Token;
 
   fn next(&mut self) -> Option<Self::Item> {
-    let word: Vec<char> = 
-      self.chars
+    let word: Vec<char> = self
+      .chars
       .peeking_take_while(|c| !Self::is_punctuation(*c))
       .collect();
-    
+
     if !word.is_empty() {
       return Some(Token::Word(Word::new(word)));
     } else {
       match self.chars.next() {
         Some(c) if Self::is_punctuation(c) => Some(Token::Punctuation(c)),
-        _ => None
+        _ => None,
       }
     }
   }
@@ -64,9 +64,7 @@ struct Word {
 
 impl Word {
   pub fn new(content: Vec<char>) -> Self {
-    Word {
-      content,
-    }
+    Word { content }
   }
 
   pub fn leetefy(&self) -> String {
