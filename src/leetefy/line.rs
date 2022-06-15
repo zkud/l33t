@@ -3,7 +3,7 @@ use super::suffix;
 use std::str::Chars;
 
 struct Tokens<'i> {
-  chars: &'i mut Chars<'i>,
+  chars: Chars<'i>,
   word: Option<Word>,
   punctuation: Option<char>,
 }
@@ -38,7 +38,7 @@ impl<'i> Iterator for Tokens<'i> {
 }
 
 impl<'i> Tokens<'i> {
-  pub fn new(chars: &'i mut Chars<'i>) -> Self {
+  pub fn new(chars: Chars<'i>) -> Self {
     Tokens {
       chars,
       word: None,
@@ -107,7 +107,7 @@ impl Word {
 }
 
 pub fn leetefy_line(line: &str) -> String {
-  Tokens::new(&mut line.chars())
+  Tokens::new(line.chars())
     .map(|token| token.leetefy())
     .collect()
 }
