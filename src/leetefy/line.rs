@@ -17,12 +17,10 @@ impl<'i> Iterator for Tokens<'i> {
       .collect();
 
     if !word.is_empty() {
-      return Some(Token::Word(Word::new(word)));
+      let word = Word::new(word);
+      Some(Token::Word(word))
     } else {
-      match self.chars.next() {
-        Some(c) if Self::is_punctuation(c) => Some(Token::Punctuation(c)),
-        _ => None,
-      }
+      self.chars.next().and_then(|c| Some(Token::Punctuation(c)))
     }
   }
 }
