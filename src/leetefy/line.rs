@@ -1,48 +1,36 @@
 use super::char;
 use super::suffix;
-use std::str::Chars;
+use std::iter::Peekable;
+use peeking_take_while::PeekableExt;
 
 struct Tokens<'i> {
-  chars: Chars<'i>,
-  word: Option<Word>,
-  punctuation: Option<char>,
+  chars: Peekable<&'i mut dyn Iterator<Item = char>> 
 }
 
 impl<'i> Iterator for Tokens<'i> {
   type Item = Token;
 
   fn next(&mut self) -> Option<Self::Item> {
-    if let Some(_) = self.punctuation {
-      return self
-        .punctuation
-        .take()
-        .and_then(|chr| Some(Token::Punctuation(chr)));
-    }
-
-    for chr in &mut self.chars {
-      if Self::is_punctuation(chr) {
-        match self.word {
-          Some(_) => {
-            self.punctuation = Some(chr);
-            return self.word.take().and_then(|word| Some(Token::Word(word)));
-          }
-          None => return Some(Token::Punctuation(chr)),
-        }
+    let word: Vec<char> = 
+      self.chars
+      .peeking_take_while(|c| !Self::is_punctuation(*c))
+      .collect();
+    
+    if !word.is_empty() {
+      return Some(Token::Word(Word::new(word)));
+    } else {
+      match self.chars.next() {
+        Some(c) if Self::is_punctuation(c) => Some(Token::Punctuation(c)),
+        _ => None
       }
-
-      Self::push_char(&mut self.word, chr);
     }
-
-    self.word.take().and_then(|word| Some(Token::Word(word)))
   }
 }
 
 impl<'i> Tokens<'i> {
-  pub fn new(chars: Chars<'i>) -> Self {
+  pub fn new(chars: &'i mut dyn Iterator<Item = char>) -> Self {
     Tokens {
-      chars,
-      word: None,
-      punctuation: None,
+      chars: chars.peekable(),
     }
   }
 
@@ -53,18 +41,6 @@ impl<'i> Tokens<'i> {
     ];
 
     PUNCTUATION_CHARS.contains(&chr)
-  }
-
-  fn push_char(word: &mut Option<Word>, chr: char) {
-    if let Some(word) = word {
-      word.push(chr);
-    } else {
-      *word = Some({
-        let mut word = Word::new();
-        word.push(chr);
-        word
-      });
-    }
   }
 }
 
@@ -87,15 +63,10 @@ struct Word {
 }
 
 impl Word {
-  pub fn new() -> Self {
-    const MEAN_LENGTH_OF_ENGLISH_WORD: usize = 5;
+  pub fn new(content: Vec<char>) -> Self {
     Word {
-      content: Vec::with_capacity(MEAN_LENGTH_OF_ENGLISH_WORD),
+      content,
     }
-  }
-
-  pub fn push(&mut self, input: char) {
-    self.content.push(input)
   }
 
   pub fn leetefy(&self) -> String {
@@ -107,7 +78,7 @@ impl Word {
 }
 
 pub fn leetefy_line(line: &str) -> String {
-  Tokens::new(line.chars())
+  Tokens::new(&mut line.chars())
     .map(|token| token.leetefy())
     .collect()
 }
