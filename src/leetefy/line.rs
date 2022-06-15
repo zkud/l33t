@@ -17,7 +17,6 @@ impl<'i> Iterator for Tokens<'i> {
       .collect();
 
     if !word.is_empty() {
-      let word = Word::new(word);
       Some(Token::Word(word))
     } else {
       self.chars.next().and_then(|c| Some(Token::Punctuation(c)))
@@ -43,33 +42,19 @@ impl<'i> Tokens<'i> {
 }
 
 enum Token {
-  Word(Word),
+  Word(Vec<char>),
   Punctuation(char),
 }
 
 impl Token {
   pub fn leetefy(&self) -> String {
     match self {
-      Token::Word(word) => word.leetefy(),
+      Token::Word(word) => suffix::leetefy_suffix(&word)
+        .iter()
+        .map(|chr| char::leetefy_char(chr))
+        .collect(),
       Token::Punctuation(chr) => String::from(*chr),
     }
-  }
-}
-
-struct Word {
-  content: Vec<char>,
-}
-
-impl Word {
-  pub fn new(content: Vec<char>) -> Self {
-    Word { content }
-  }
-
-  pub fn leetefy(&self) -> String {
-    suffix::leetefy_suffix(&self.content)
-      .iter()
-      .map(|chr| char::leetefy_char(chr))
-      .collect()
   }
 }
 
