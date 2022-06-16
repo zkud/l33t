@@ -1,5 +1,5 @@
 mod char;
 mod line;
-mod suffix;
+mod word;
 
 pub use line::leetefy_line;

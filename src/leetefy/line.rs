@@ -1,5 +1,5 @@
 use super::char;
-use super::suffix;
+use super::word;
 use peeking_take_while::PeekableExt;
 use std::iter::Peekable;
 
@@ -11,7 +11,7 @@ impl<'i> Iterator for Tokens<'i> {
   type Item = Token;
 
   fn next(&mut self) -> Option<Self::Item> {
-    let word: Vec<char> = self
+    let word: String = self
       .chars
       .peeking_take_while(|c| !Self::is_punctuation(*c))
       .collect();
@@ -42,16 +42,16 @@ impl<'i> Tokens<'i> {
 }
 
 enum Token {
-  Word(Vec<char>),
+  Word(String),
   Punctuation(char),
 }
 
 impl Token {
   pub fn leetefy(&self) -> String {
     match self {
-      Token::Word(word) => suffix::leetefy_suffix(&word)
-        .iter()
-        .map(|chr| char::leetefy_char(chr))
+      Token::Word(word) => word::leetefy_word(&word)
+        .chars()
+        .map(|chr| char::leetefy_char(&chr))
         .collect(),
       Token::Punctuation(chr) => String::from(*chr),
     }
