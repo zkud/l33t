@@ -1,46 +1,43 @@
-use rand;
-use rand::seq::SliceRandom;
+use super::random::maybe_translate;
 
 pub fn leetefy_char(chr: &char) -> String {
   if !chr.is_ascii() {
     return chr.to_string();
   }
 
-  let chr = chr.to_string();
-  match chr.as_str() {
-    "a" => random_choice(vec![&chr, "/\\", "@"]),
-    "b" => random_choice(vec![&chr, "I3"]),
-    "c" => random_choice(vec![&chr, "[", "("]),
-    "d" => random_choice(vec![&chr, "|)", "T)"]),
-    "e" => random_choice(vec![&chr, "3"]),
-    "f" => random_choice(vec![&chr, "|=", "/="]),
-    "g" => random_choice(vec![&chr, "[."]),
-    "h" => random_choice(vec![&chr, "|-|", "|~|"]),
-    "i" => random_choice(vec![&chr, "1"]),
-    "j" => random_choice(vec![&chr, "_|"]),
-    "k" => random_choice(vec![&chr, "|<"]),
-    "l" => random_choice(vec![&chr, "|_", "7"]),
-    "m" => random_choice(vec![&chr, "/\\/\\", "[V]"]),
-    "n" => random_choice(vec![&chr, "|\\|", "[\\]"]),
-    "o" => random_choice(vec![&chr, "0", "()"]),
-    "p" => random_choice(vec![&chr, "|7", "|*"]),
-    "q" => random_choice(vec![&chr, "0_"]),
-    "r" => random_choice(vec![&chr, "I2", "|`"]),
-    "s" => random_choice(vec![&chr, "5", "$"]),
-    "t" => random_choice(vec![&chr, "7", "+"]),
-    "u" => random_choice(vec![&chr, "|_|"]),
-    "v" => random_choice(vec![&chr, "\\/"]),
-    "w" => random_choice(vec![&chr, "vv", "\\V/"]),
-    "x" => random_choice(vec![&chr, "><", "}{"]),
-    "y" => random_choice(vec![&chr, "\\|/"]),
-    "z" => random_choice(vec![&chr, "2"]),
-    _ => chr,
-  }
-}
+  let possibility = 0.2;
 
-fn random_choice(variants: Vec<&str>) -> String {
-  let mut range = rand::thread_rng();
-  variants.choose(&mut range).unwrap().to_string()
+  let chr = chr.to_string();
+  let chr = chr.as_str();
+  match chr {
+    "a" => maybe_translate(chr, vec!["/\\", "@"], possibility),
+    "b" => maybe_translate(chr, vec!["I3"], possibility),
+    "c" => maybe_translate(chr, vec!["[", "("], possibility),
+    "d" => maybe_translate(chr, vec!["|)", "T)"], possibility),
+    "e" => maybe_translate(chr, vec!["3"], possibility),
+    "f" => maybe_translate(chr, vec!["|=", "/="], possibility),
+    "g" => maybe_translate(chr, vec!["[."], possibility),
+    "h" => maybe_translate(chr, vec!["|-|", "|~|"], possibility),
+    "i" => maybe_translate(chr, vec!["1"], possibility),
+    "j" => maybe_translate(chr, vec!["_|"], possibility),
+    "k" => maybe_translate(chr, vec!["|<"], possibility),
+    "l" => maybe_translate(chr, vec!["|_", "7"], possibility),
+    "m" => maybe_translate(chr, vec!["/\\/\\", "[V]"], possibility),
+    "n" => maybe_translate(chr, vec!["|\\|", "[\\]"], possibility),
+    "o" => maybe_translate(chr, vec!["0", "()"], possibility),
+    "p" => maybe_translate(chr, vec!["|7", "|*"], possibility),
+    "q" => maybe_translate(chr, vec!["0_"], possibility),
+    "r" => maybe_translate(chr, vec!["I2", "|`"], possibility),
+    "s" => maybe_translate(chr, vec!["5", "$"], possibility),
+    "t" => maybe_translate(chr, vec!["7", "+"], possibility),
+    "u" => maybe_translate(chr, vec!["|_|"], possibility),
+    "v" => maybe_translate(chr, vec!["\\/"], possibility),
+    "w" => maybe_translate(chr, vec!["vv", "\\V/"], possibility),
+    "x" => maybe_translate(chr, vec!["><", "}{"], possibility),
+    "y" => maybe_translate(chr, vec!["\\|/"], possibility),
+    "z" => maybe_translate(chr, vec!["2"], possibility),
+    _ => chr.to_string(),
+  }
 }
 
 #[cfg(test)]

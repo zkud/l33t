@@ -1,5 +1,5 @@
-use super::char;
-use super::word;
+use super::char::leetefy_char;
+use super::word::leetefy_word;
 use peeking_take_while::PeekableExt;
 use std::iter::Peekable;
 
@@ -49,9 +49,9 @@ enum Token {
 impl Token {
   pub fn leetefy(&self) -> String {
     match self {
-      Token::Word(word) => word::leetefy_word(&word)
+      Token::Word(word) => leetefy_word(&word)
         .chars()
-        .map(|chr| char::leetefy_char(&chr))
+        .map(|chr| leetefy_char(&chr))
         .collect(),
       Token::Punctuation(chr) => String::from(*chr),
     }
